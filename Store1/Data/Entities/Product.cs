@@ -18,6 +18,7 @@ namespace Store1.Data.Entities
         public DateTime? Create { get; set; }
         public virtual Category? Category { get; set; }
 
+        public virtual ICollection<ProductImage>? ProductImages { get; set; }
 
     }
 }
