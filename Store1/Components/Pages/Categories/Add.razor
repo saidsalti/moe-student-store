@@ -1,12 +1,91 @@
 ﻿@page "/categories/add"
+@using Store1.Data.Dtos
 
-
+@rendermode InteractiveServer
+@inject IWebHostEnvironment _webHostEnvironment
 <MudGrid Spacing="6">
-    <MudItem>
-        <MudPaper></MudPaper>
+    <MudItem xs="12">
+        <MudText Typo="Typo.h3" Align="Align.Left" >Add project</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="8" md="6" lg="6" >
+        <MudPaper>
+            <MudCard>
+                <MudForm  Model="model" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                    <MudCardContent>
+                        <MudTextField  @bind-Value="model.NameAr"
+                        For="@(() => model.NameAr)"
+                        Immediate="true"
+                        Label="Name ar" />
+                        <MudCheckBox  For="@(()=>model.IsActive)" @bind-Value="model.IsActive"></MudCheckBox>
+
+
+                        <MudFileUpload T="IBrowserFile"
+                        FilesChanged="uploadFiles" 
+                        >
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                StartIcon="@Icons.Material.Filled.CloudUpload">
+                                    Select Image
+                                </MudButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
+                    </MudCardContent>
+                    @if(!string.IsNullOrEmpty( message)){
+                        <MudText Typo="Typo.body1"></MudText>
+
+                    }
+                    <MudButton Variant="Variant.Filled" OnClick="saveData" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+                </MudForm>
+            </MudCard>
+
+
+        </MudPaper>
     </MudItem>
 </MudGrid>
 
 @code {
+
+    bool success;
+    string[] errors = [];
+    MudForm? form;
+
+    private CategoryDto model { get; set; } = new();
+    string? message = string.Empty;
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    private void uploadFiles(IBrowserFile file){
+        model.file = file;
+    }
+
+    private async Task saveData(){
+        var data = model;
+        if(data.file!=null){
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(data.file.Name).ToLower();
+            if (Array.IndexOf(allowedExtensions, fileExtension) < 0)
+            {
+                message = "Invalid file type.";
+                return;
+            }
+            var fileName = $"{Guid.NewGuid().ToString("N")}{fileExtension}";
+            var uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+            var filePath = Path.Combine(uploadPath, fileName);
+            using (var stream = data.file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024))
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await stream.CopyToAsync(fileStream);
+            }
+            data.ImagePath = $"images/{fileName}";
+
+        }
+    }
 
 }
