@@ -1,8 +1,12 @@
 ﻿@page "/categories/add"
 @using Store1.Data.Dtos
-
+@using Store1.Data.Entities
+@using Store1.Data.Services
 @rendermode InteractiveServer
+
 @inject IWebHostEnvironment _webHostEnvironment
+@inject ICategoryService _categoryService
+
 <MudGrid Spacing="6">
     <MudItem xs="12">
         <MudText Typo="Typo.h3" Align="Align.Left" >Add project</MudText>
@@ -13,7 +17,7 @@
                 <MudForm  Model="model" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
                     <MudCardContent>
                         <MudTextField  @bind-Value="model.NameAr"
-                        For="@(() => model.NameAr)"
+                        For="@(()=>model.NameAr)"
                         Immediate="true"
                         Label="Name ar" />
                         <MudCheckBox  For="@(()=>model.IsActive)" @bind-Value="model.IsActive"></MudCheckBox>
@@ -71,7 +75,7 @@
                 message = "Invalid file type.";
                 return;
             }
-            var fileName = $"{Guid.NewGuid().ToString("N")}{fileExtension}";
+            var fileName = $"{Path.GetRandomFileName()}{fileExtension}";
             var uploadPath = Path.Combine(_webHostEnvironment.WebRootPath, "images");
             if (!Directory.Exists(uploadPath))
             {
@@ -84,6 +88,20 @@
                 await stream.CopyToAsync(fileStream);
             }
             data.ImagePath = $"images/{fileName}";
+            var category = new Category {
+                    NameAr = data.NameAr,
+                    ImagePath = data.ImagePath,
+                    IsActive = data.IsActive,
+                    OrderIndex = data.OrderIndex
+                };
+            var result= _categoryService.Add(category);
+            if(result>0){
+                message="Saved!!";
+                await form!.ResetAsync();
+
+            }else{
+                message = "Sorry saved fail!";
+            }
 
         }
     }

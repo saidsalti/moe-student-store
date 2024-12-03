@@ -1,6 +1,59 @@
 ﻿@page "/categories/index"
+@using Store1.Data.Dtos
+@using Store1.Data.Services
+@rendermode InteractiveServer
+@inject IWebHostEnvironment _webHostEnvironment
+@inject ICategoryService _categoryService
+<MudPopoverProvider />
 
-اضافة المنتجات
+<table class="table">
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Image</td>
+            <td>Name</td>
+            <td>Is Active</td>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+        @foreach (var item in categories)
+        {
+           
+            <tr>
+                <td>@item.Id</td>
+                <td>@{
+                        var imagePath = $"{_webHostEnvironment.WebRootPath}/{item.ImagePath}"; 
+                        
+                        <img alt="" src="@imagePath!" width="80" height="80" />
+                    }</td>
+                <td>@item.NameAr</td>
+                <td>@item.IsActive</td>
+            </tr>
+        }
+</tbody>
+</table>
+
+<MudDataGrid Items="categories">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="Id" />
+        <PropertyColumn Property="x => x.NameAr" />
+        <PropertyColumn Property="x => x.IsActive" />
+        @* <TemplateColumn Title="Image">
+           
+        </TemplateColumn> *@
+    </Columns>
+</MudDataGrid>
+
+
 @code {
+    List<CategoryDto> categories = new ();
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        categories = _categoryService.FindAll();
+    }
 }

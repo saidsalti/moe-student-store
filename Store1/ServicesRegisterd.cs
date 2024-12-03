@@ -7,6 +7,7 @@ namespace Store1
         public static void AddRegistredService(this IServiceCollection services)
         {
             services.AddTransient<ICategoryService, CategoryService>();
+           
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Store1.Data.Services
         int Update(Category category);
         int Remove(Category category);
         Category? FindOne(int? Id);
-        List<CategoryDto> LoadCategories();
+        List<CategoryDto> FindAll();
     }
     public class CategoryService:ICategoryService
     {
@@ -20,8 +20,9 @@ namespace Store1.Data.Services
             this._db = db;
         }
 
-        public List<CategoryDto> LoadCategories()
+        public List<CategoryDto> FindAll()
         {
+           
             return _db.Categories!.Where(m => !(m.IsDeleted ?? false))
                 .Select(s => new CategoryDto
                 {
@@ -36,7 +37,7 @@ namespace Store1.Data.Services
         }
         public Category? FindOne(int?Id)
         {
-            return _db.Categories!.Take(1).SingleOrDefault();
+            return _db.Categories!.Where(m=>m.Id==Id).Take(1).SingleOrDefault();
         }
         public int Add(Category category )
         {
