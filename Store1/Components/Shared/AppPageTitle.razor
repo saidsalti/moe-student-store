@@ -1,0 +1,41 @@
+﻿
+<MudPaper Class="@($"pa-4 mb-4 {Class}")" Style="@Style" Elevation="0">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <MudText Typo="@TitleTypo" Color="@TitleColor" Class="mb-2">@Title</MudText>
+    }
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <MudText Typo="@DescriptionTypo" Color="@DescriptionColor">@Description</MudText>
+    }
+    @ChildContent
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Style { get; set; } = string.Empty;
+
+    [Parameter]
+    public Typo TitleTypo { get; set; } = Typo.h4;
+
+    [Parameter]
+    public Typo DescriptionTypo { get; set; } = Typo.body1;
+
+    [Parameter]
+    public Color TitleColor { get; set; } = Color.Primary;
+
+    [Parameter]
+    public Color DescriptionColor { get; set; } = Color.Secondary;
+}

@@ -2,50 +2,65 @@
 @using Store1.Data.Dtos
 @using Store1.Data.Services
 @rendermode InteractiveServer
-@inject IWebHostEnvironment _webHostEnvironment
 @inject ICategoryService _categoryService
+@inject NavigationManager NavigationManager
+
 <MudPopoverProvider />
 
-<table class="table">
-    <thead>
-        <tr>
-            <td>Id</td>
-            <td>Image</td>
-            <td>Name</td>
-            <td>Is Active</td>
+<style>
+    .textCustomColor{
+        color:green;
+        border:2px dashed #000;
+    }
+</style>
+<MudGrid>
 
-        </tr>
+    <MudItem xs="12" >
+        <MudPaper Elevation="25">
+            <MudIconButton Icon="@Icons.Material.Outlined.Add" OnClick="NavigateToPage"></MudIconButton>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12">
+        <MudPaper Elevation="25" >
+            <AppPageTitle Title="Through this window, the main categories of products are displayed." />
 
-    </thead>
+        </MudPaper>
+        <MudDataGrid Bordered="true" Items="categories">
+            <Columns>
+                <PropertyColumn Property="x => x.Id" Title="Id" />
+                @* <PropertyColumn Property="x => x.NameAr" /> *@
+                    <TemplateColumn>
+                        <CellTemplate>
+                        <MudText Class="textCustomColor"  Typo="Typo.h5">@context.Item.NameAr</MudText>
 
-    <tbody>
-        @foreach (var item in categories)
-        {
-           
-            <tr>
-                <td>@item.Id</td>
-                <td>@{
-                        var imagePath = $"{_webHostEnvironment.WebRootPath}/{item.ImagePath}"; 
-                        
-                        <img alt="" src="@imagePath!" width="80" height="80" />
-                    }</td>
-                <td>@item.NameAr</td>
-                <td>@item.IsActive</td>
-            </tr>
-        }
-</tbody>
-</table>
+                        </CellTemplate>
+                    </TemplateColumn>
+                <PropertyColumn Property="x => x.IsActive" />
+                <TemplateColumn Title="ImageTemplate">
+                    <CellTemplate>
 
-<MudDataGrid Items="categories">
-    <Columns>
-        <PropertyColumn Property="x => x.Id" Title="Id" />
-        <PropertyColumn Property="x => x.NameAr" />
-        <PropertyColumn Property="x => x.IsActive" />
-        @* <TemplateColumn Title="Image">
-           
-        </TemplateColumn> *@
-    </Columns>
-</MudDataGrid>
+                        @{
+                            var imagePath = $"/{context.Item.ImagePath}";
+                        }
+                        <MudImage Width="70" Src="@imagePath"></MudImage>
+
+                    </CellTemplate>
+                </TemplateColumn>
+
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="()=>EditCategory(context.Item.Id)" ></MudIconButton>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="CategoryDto"></MudDataGridPager>
+            </PagerContent>
+        </MudDataGrid>
+    </MudItem>
+</MudGrid>
+
+
 
 
 @code {
@@ -55,5 +70,14 @@
     {
         base.OnInitialized();
         categories = _categoryService.FindAll();
+    }
+    private void NavigateToPage()
+    {
+
+        NavigationManager.NavigateTo("/categories/add");
+    }
+
+    private void  EditCategory(int?id){
+        NavigationManager.NavigateTo($"/categories/edit/{id}");
     }
 }
