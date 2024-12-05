@@ -1,0 +1,53 @@
+﻿@page "/categories/delete/{id:int?}"
+@using Microsoft.AspNetCore.Authorization
+@using Store1.Data.Services
+@using Store1.Data.Models
+@rendermode InteractiveServer
+
+@inject ICategoryService _categoryService
+@inject NavigationManager _navigationManger
+@inject IAppTempData _tempData
+@attribute [Authorize]
+
+<MudCard Style="padding: 16px; max-width: 400px; margin: auto; text-align: center;">
+    <MudCardContent>
+        <MudText Align="Align.Center" Color="Color.Error" Typo="Typo.h6">
+            سيتم حذف المنتج رقم <span style="font-weight: bold;">@Id</span>
+        </MudText>
+    </MudCardContent>
+    <MudCardActions Style="justify-content: center; margin-top: 16px;">
+        <MudButton ButtonType="ButtonType.Button" Color="Color.Error" Variant="Variant.Filled" OnClick="DeleteCategory">
+            تأكيد الحذف
+        </MudButton>
+        <MudButton ButtonType="ButtonType.Button" Color="Color.Secondary" Variant="Variant.Outlined" OnClick="cancel" Style="margin-left: 8px;">
+            إلغاء الأمر
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+
+@code {
+
+    [Parameter] public int? Id { get; set; }
+
+    private void DeleteCategory(){
+        var model = _categoryService.FindOne(Id);
+        if (model == null) navigatToHome();
+        var result = _categoryService.Remove(model!);
+        if(result>0){
+            var message = new MessageModel { Message = $"تم حذف المنتج  رقم {Id} بنجاح" ,Severity=Severity.Success};
+            _tempData.data = message;
+
+        }else{
+            var message = new MessageModel { Message = $"عذرا لم يتم حذف المنتج رقم {Id}", Severity = Severity.Error };
+            _tempData.data = message;
+        }
+        navigatToHome();
+    }
+    private void cancel(){
+        _tempData.data = null;
+        navigatToHome();
+    }
+    private void navigatToHome() => _navigationManger.NavigateTo("/categories/Index");
+
+}

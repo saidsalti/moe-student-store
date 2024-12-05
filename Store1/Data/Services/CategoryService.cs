@@ -62,7 +62,9 @@ namespace Store1.Data.Services
         public int Update(Category category)
         {
             _db.Categories!.Update(category);
-            return _db.SaveChanges();
+            var result= _db.SaveChanges();
+            _db.ChangeTracker.Clear();
+            return result;
         }
 
         public int Remove(Category category)

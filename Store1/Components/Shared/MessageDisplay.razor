@@ -1,0 +1,42 @@
+﻿@using MudBlazor
+@using Store1.Data.Services
+@inject IAppTempData _tempData
+
+@if (!IsHidden)
+{
+    <MudAlert Severity="@AlertSeverity" Elevation="2" Style="margin: 1rem;">
+        <MudText Typo="Typo.body1">@Message</MudText>
+        <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Small" Style="margin-left: 8px;" OnClick="CloseAlert">
+            &#x2715; <!-- رمز X للإغلاق -->
+        </MudButton>
+    </MudAlert>
+}
+
+@code {
+    [Parameter]
+    public string Message { get; set; } = "Default Message";
+
+    [Parameter]
+    public Severity AlertSeverity { get; set; } = Severity.Info;
+
+    [Parameter]
+    public int AutoHideDuration { get; set; } = 3000; // المدة الزمنية للإخفاء التلقائي (بالميلي ثانية)
+
+    private bool IsHidden = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AutoHideDuration > 0)
+        {
+            await Task.Delay(AutoHideDuration);
+            CloseAlert();
+            StateHasChanged(); // تحديث واجهة المستخدم
+        }
+    }
+
+    private void CloseAlert()
+    {
+        _tempData.data = null;
+        IsHidden = true; // إخفاء الرسالة عند النقر على زر الإغلاق
+    }
+}

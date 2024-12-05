@@ -1,4 +1,5 @@
 ﻿@page "/categories/edit/{id:int?}"
+@using Microsoft.AspNetCore.Authorization
 @using Store1.Data.Dtos
 @using Store1.Data.Entities
 @using Store1.Data.Services
@@ -7,43 +8,62 @@
 @rendermode InteractiveServer
 
 @inject IWebHostEnvironment _webHostEnvironment
+@attribute [Authorize]
 
 <MudGrid Spacing="6">
+    @{
+        if (!string.IsNullOrEmpty(ResponseMessage) && ResponseMessage != ""){
+        // <MudAlert Severity="Severity.Success">@ResponseMessage</MudAlert>
+            <MessageDisplay Message="@ResponseMessage" AlertSeverity="severity"></MessageDisplay>
+        }
+    }
     <MudItem xs="12">
         <MudText Typo="Typo.h3" Align="Align.Left">Add project</MudText>
     </MudItem>
-    <MudItem xs="12">
+    @*  <MudItem xs="12">
         <MudImage Src="@imagePath" Width="150"></MudImage>
-    </MudItem>
+    </MudItem> *@
     <MudItem xs="12" sm="8" md="6" lg="6">
         <MudPaper>
             <MudCard>
                 <MudForm Model="model" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
                     <MudCardContent>
-                        <MudTextField @bind-Value="model.NameAr"
-                        For="@(()=>model.NameAr)"
-                        Immediate="true"
-                        Label="Name ar" />
-                        <MudCheckBox For="@(()=>model.IsActive)" @bind-Value="model.IsActive"></MudCheckBox>
+                        <MudGrid Spacing="3">
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="model.NameAr"
+                                For="@(()=>model.NameAr)"
+                                Immediate="true"
+                                Label="Name ar" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudCheckBox For="@(()=>model.IsActive)" @bind-Value="model.IsActive"></MudCheckBox>
+                            </MudItem>
+                            <MudItem xs="12">
 
-
-                        <MudFileUpload T="IBrowserFile"
-                        FilesChanged="uploadFiles">
-                            <ActivatorContent>
-                                <MudButton Variant="Variant.Filled"
-                                Color="Color.Primary"
-                                StartIcon="@Icons.Material.Filled.CloudUpload">
-                                    Select Image
-                                </MudButton>
-                            </ActivatorContent>
-                        </MudFileUpload>
+                                <MudFileUpload T="IBrowserFile"
+                                FilesChanged="uploadFiles">
+                                    <ActivatorContent>
+                                        <MudButton Variant="Variant.Filled"
+                                        Color="Color.Primary"
+                                        StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            Select Image
+                                        </MudButton>
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudImage Src="@imagePath" Width="150"></MudImage>
+                            </MudItem>
+                        </MudGrid>
                     </MudCardContent>
-                    @if (!string.IsNullOrEmpty(message))
-                    {
-                        <MudText Typo="Typo.body1"></MudText>
 
-                    }
-                    <MudButton Variant="Variant.Filled" OnClick="saveData" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+                    <MudItem xs="12" >
+
+                        <MudPaper Class="pa-4" >
+                            <MudButton Variant="Variant.Filled" OnClick="saveData" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+
+                        </MudPaper>
+                    </MudItem>
                 </MudForm>
             </MudCard>
 
@@ -60,29 +80,37 @@
     string[] errors = [];
     MudForm? form;
     string imagePath = string.Empty;
-
-    string? message = string.Empty;
-    protected override Task OnInitializedAsync()
+    string ResponseMessage=string.Empty;
+    Severity severity = Severity.Info;
+    protected override  Task OnInitializedAsync()
     {
-        
-        if (Id == null) {
+
+        initData();
+        return base.OnInitializedAsync();
+
+
+    }
+    private void initData(){
+        if (Id == null)
+        {
             NavigationManager.NavigateTo("/categories/index");
 
-        }else{
+        }
+        else
+        {
             model = _categoryService.FindOneDto(Id)!;
-            if(model==null){
+            if (model == null)
+            {
                 NavigationManager.NavigateTo("/categories/add");
 
             }
             imagePath = $"/{model!.ImagePath!}";
 
         }
-        return base.OnInitializedAsync();
-
-
     }
     private async Task saveData()
     {
+        ResponseMessage = string.Empty;
         var data = model;
         if (data.file != null)
         {
@@ -90,7 +118,6 @@
             var fileExtension = Path.GetExtension(data.file.Name).ToLower();
             if (Array.IndexOf(allowedExtensions, fileExtension) < 0)
             {
-                message = "Invalid file type.";
                 return;
             }
             var fileName = $"{Path.GetRandomFileName()}{fileExtension}";
@@ -108,22 +135,15 @@
             data.ImagePath = $"images/{fileName}";
             var category = new Category
                 {
+                    Id=Id,
                     NameAr = data.NameAr,
                     ImagePath = data.ImagePath,
                     IsActive = data.IsActive,
                     OrderIndex = data.OrderIndex
                 };
             var result = _categoryService.Update(category);
-            if (result > 0)
-            {
-                message = "Saved!!";
-                await form!.ResetAsync();
+            showMessage(result);
 
-            }
-            else
-            {
-                message = "Sorry saved fail!";
-            }
 
         }else{
             var category = new Category
@@ -134,21 +154,26 @@
                     IsActive = data.IsActive,
                     OrderIndex = data.OrderIndex
                 };
-            var result = _categoryService.Update(category);
-            if (result > 0)
-            {
-                message = "Saved!!";
-                await form!.ResetAsync();
 
-            }
-            else
-            {
-                message = "Sorry saved fail!";
-            }
+            var result = _categoryService.Update(category);
+            showMessage(result);
         }
     }
     private void uploadFiles(IBrowserFile file)
     {
         model.file = file;
+    }
+
+    private void showMessage(int result){
+        if (result > 0)
+        {
+            ResponseMessage = "Saved successfully";
+            severity = Severity.Success;
+        }
+        else
+        {
+            ResponseMessage = "Failed to save";
+            severity = Severity.Error;
+        }
     }
 }

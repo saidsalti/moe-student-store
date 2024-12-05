@@ -1,10 +1,13 @@
 ﻿@page "/categories/index"
 @using Store1.Data.Dtos
+@using Store1.Data.Models
 @using Store1.Data.Services
+@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveServer
 @inject ICategoryService _categoryService
 @inject NavigationManager NavigationManager
-
+@inject IAppTempData _tempData
+@attribute [Authorize]
 <MudPopoverProvider />
 
 <style>
@@ -13,6 +16,15 @@
         border:2px dashed #000;
     }
 </style>
+
+@{
+    if (_tempData.data!=null)
+    {
+        var messageModel = _tempData.data as MessageModel;
+    
+        <MessageDisplay Message="@messageModel!.Message" AlertSeverity="messageModel.Severity"></MessageDisplay>
+    }
+}
 <MudGrid>
 
     <MudItem xs="12" >
@@ -50,6 +62,8 @@
                 <TemplateColumn>
                     <CellTemplate>
                         <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="()=>EditCategory(context.Item.Id)" ></MudIconButton>
+                        <MudIconButton Color="Color.Error" Icon="@Icons.Material.Outlined.RestoreFromTrash" OnClick="()=>DeleteCategory(context.Item.Id)"></MudIconButton>
+
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
@@ -79,5 +93,10 @@
 
     private void  EditCategory(int?id){
         NavigationManager.NavigateTo($"/categories/edit/{id}");
+    }
+
+    private void DeleteCategory(int?id){
+        NavigationManager.NavigateTo($"/categories/delete/{id}");
+
     }
 }

@@ -1,9 +1,10 @@
 ﻿@page "/categories/add"
+@using Microsoft.AspNetCore.Authorization
 @using Store1.Data.Dtos
 @using Store1.Data.Entities
 @using Store1.Data.Services
 @rendermode InteractiveServer
-
+@attribute [Authorize]
 @inject IWebHostEnvironment _webHostEnvironment
 @inject ICategoryService _categoryService
 
