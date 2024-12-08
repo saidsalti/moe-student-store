@@ -1,6 +1,6 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
-
+@inject ISnackbar Snackbar
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -16,7 +16,12 @@
 
 @code {
     private int currentCount = 0;
-
+    protected override void OnInitialized()
+    {
+        Snackbar.Configuration.MaxDisplayedSnackbars = 10;
+        Snackbar.Add("السلام عليكم", Severity.Success);
+        base.OnInitialized();
+    }
     private void IncrementCount()
     {
         currentCount++;
